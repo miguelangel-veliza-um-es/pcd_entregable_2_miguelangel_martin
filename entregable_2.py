@@ -255,15 +255,15 @@ class Contexto:
 class Estrategia(ABC):
     @abstractmethod
     def aplicar_estrategia(self,L):
-        pass
-
-class EstrategiaA(Estrategia):
-    def aplicar_estrategia(self, L):
         
         if not isinstance(L, list):
             raise TypeError("El parametro proporcionado debe ser de tipo 'list'.")
         if not all(isinstance(elem, (float, int)) for elem in L):
             raise TypeError("La lista debe contener solo elementos de tipo 'float' o 'int'.")
+        
+
+class EstrategiaA(Estrategia):
+    def aplicar_estrategia(self, L):
         
         calc_media = lambda lista: round(reduce(lambda x,y: (x+y) ,lista)/len(lista),3)
         calc_sd = lambda lista: round((reduce(lambda x,y: x+y, map(lambda x: (x[0] - x[1])**2, zip(lista, [calc_media(lista)]*len(lista))))/len(lista))**(1/2),3)
@@ -272,11 +272,6 @@ class EstrategiaA(Estrategia):
 
 class EstrategiaB(Estrategia):
     def aplicar_estrategia(self, L):
-        
-        if not isinstance(L, list):
-            raise TypeError("El parametro proporcionado debe ser de tipo 'list'.")
-        if not all(isinstance(elem, (float, int)) for elem in L):
-            raise TypeError("La lista debe contener solo elementos de tipo 'float' o 'int'.")
         
         from math import ceil
 
@@ -287,11 +282,6 @@ class EstrategiaB(Estrategia):
 class EstrategiaC(Estrategia):
     def aplicar_estrategia(self, L):
         
-        if not isinstance(L, list):
-            raise TypeError("El parametro proporcionado debe ser de tipo 'list'.")
-        if not all(isinstance(elem, (float, int)) for elem in L):
-            raise TypeError("La lista debe contener solo elementos de tipo 'float' o 'int'.")
-
         calc_max = lambda lista: reduce(lambda x, y: x if x > y else y, lista)
         calc_min = lambda lista: reduce(lambda x, y: x if x < y else y, lista)
 
