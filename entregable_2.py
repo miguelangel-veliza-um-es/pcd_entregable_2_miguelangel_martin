@@ -9,7 +9,7 @@ import threading
 
 ##### SINGLETON #####
 
-class entornoIoT:
+class EntornoIoT:
     _unicaInstancia = None
 
     def __init__(self, nombreSistema):
@@ -42,7 +42,7 @@ class entornoIoT:
         # cuando registro un nuevo valor de temperatura salta la notificación
         return 
 
-    # Función para pasar los valores registrados al entornoIoT
+    # Función para pasar los valores registrados al EntornoIoT
     def _obtener_datos(self):
         nueva_temp = self._subs.get_datos()[1]
         if len(self._ultimos_datos) > 12:
@@ -54,11 +54,11 @@ class entornoIoT:
 
     def _realizar_calculos(self):
         L = self._ultimos_datos
-        T = manejadorAumentoTemperatura(L)
-        U = manejadorSuperaUmbral(L, T)
-        C = manejadorEstadisticos_EstrategiaC(L, U)
-        B = manejadorEstadisticos_EstrategiaB(L, C)
-        A = manejadorEstadisticos_EstrategiaA(L, B)
+        T = ManejadorAumentoTemperatura(L)
+        U = ManejadorSuperaUmbral(L, T)
+        C = ManejadorEstadisticos_EstrategiaC(L, U)
+        B = ManejadorEstadisticos_EstrategiaB(L, C)
+        A = ManejadorEstadisticos_EstrategiaA(L, B)
 
         A.manejar_posicion()
 
@@ -74,7 +74,7 @@ class entornoIoT:
         self._registrar_subscriptor("Alerta Registro Temperatura")
         self._detener_bucle = False
         print("Registrando temperaturas ....")
-        # Creamos un hilo con el objetivo de que el entornoIoT continúe registrando temperaturas mientras espera
+        # Creamos un hilo con el objetivo de que el EntornoIoT continúe registrando temperaturas mientras espera
         # que el usuario presione Enter. Esta espera se va a realizar en segundo plano para no bloquear el programa
         # principal.
         # Creamos el hilo. Este inicia la ejecución de la función _parar_funcionamiento
@@ -91,7 +91,7 @@ class entornoIoT:
         input("Presiona Enter para detener el registro de temperaturas...\n")
         self._detener_bucle = True
         self._fin_funcionamiento = datetime.now()
-        # Con esta función, cuando se presione Enter se detiene el entornoIoT deja de registrar temperaturas
+        # Con esta función, cuando se presione Enter se detiene el EntornoIoT deja de registrar temperaturas
 
 ##### OBSERVER #####
 
@@ -106,19 +106,23 @@ class Sensor:
         if not isinstance(subscriptor, Subscriptor):
                 raise TypeError("La variable 'subscriptor' debe ser de tipo 'Subscriptor'")
         self._subscriptores.append(subscriptor)
+        return
 
     def eliminar_subscriptor(self, subscriptor):
         if not isinstance(subscriptor, Subscriptor):
             raise TypeError("La variable 'subscriptor' debe ser de tipo 'Subscriptor'")
         self._subscriptores.remove(subscriptor)
+        return 
 
     def notificar_subscriptores(self, datos):
         for subscriptor in self._subscriptores:
             subscriptor.actualizar(datos)
+        return 
     
     def registrar_datos(self, datos):
         self.datos = datos
         self.notificar_subscriptores(self.datos)
+        return
 
 class Subscriptor(ABC):
     @abstractmethod
@@ -136,12 +140,13 @@ class Alerta_Nuevo_Registro(Subscriptor):
     def actualizar(self, datos):
         self._datos = datos
         print(f"Nuevo registro de temperatura: {self.get_datos()}\n")
+        return 
 
 ##### CHAIN OF RESPONSABILITY ######
 
-class manejadorcalculos(ABC):
+class Manejadorcalculos(ABC):
     def __init__(self, ultimos_datos, successor=None): 
-        if not isinstance(successor, manejadorcalculos) and successor != None:
+        if not isinstance(successor, Manejadorcalculos) and successor != None:
             raise TypeError("La variable 'successor' debe ser de tipo 'manejadorcaculos'")
         if not isinstance(ultimos_datos, list) or not all(isinstance(elem, float) for elem in ultimos_datos):
             raise TypeError("La variable 'ultimos_datos' debe ser de tipo 'lista' formada por elementos de tipo 'float")
@@ -155,10 +160,11 @@ class manejadorcalculos(ABC):
     def manejar_posicion(self):
         pass
 
-class manejadorEstadisticos_EstrategiaA(manejadorcalculos):
+class ManejadorEstadisticos_EstrategiaA(Manejadorcalculos):
     def establecer_estrategia_manejador(self):
         self._estrategia = Contexto()
         self._estrategia.establecer_estrategia(EstrategiaA())
+        return 
     def manejar_posicion(self):
         self.establecer_estrategia_manejador()
         media, sd = self._estrategia.hacer_algo(self._ultimos_datos)
@@ -167,7 +173,7 @@ class manejadorEstadisticos_EstrategiaA(manejadorcalculos):
             self._successor.manejar_posicion()
         return
 
-class manejadorEstadisticos_EstrategiaB(manejadorcalculos):
+class ManejadorEstadisticos_EstrategiaB(Manejadorcalculos):
     def establecer_estrategia_manejador(self):
         self._estrategia = Contexto()
         self._estrategia.establecer_estrategia(EstrategiaB())
@@ -181,7 +187,7 @@ class manejadorEstadisticos_EstrategiaB(manejadorcalculos):
             self._successor.manejar_posicion()
         return
 
-class manejadorEstadisticos_EstrategiaC(manejadorcalculos):
+class ManejadorEstadisticos_EstrategiaC(Manejadorcalculos):
     def establecer_estrategia_manejador(self):
         self._estrategia = Contexto()
         self._estrategia.establecer_estrategia(EstrategiaC())
@@ -194,7 +200,7 @@ class manejadorEstadisticos_EstrategiaC(manejadorcalculos):
             self._successor.manejar_posicion()
         return
 
-class manejadorSuperaUmbral(manejadorcalculos):
+class ManejadorSuperaUmbral(Manejadorcalculos):
     # Utilizamos los resultados calculos por la EstrategiaC para obtener el valor máximo de temperatura
     # registrado durante el último minuto
     def establecer_estrategia(self):
@@ -207,13 +213,13 @@ class manejadorSuperaUmbral(manejadorcalculos):
         temp_umbral = 36
         maximo, _ = self._estrategia.hacer_algo(L)
         supera = maximo > temp_umbral
-        print(f"¿Se ha sobrepasado la temperatura {temp_umbral}ºC en los últimos 60 segundos?")
+        print(f"¿Se ha sobrepasado la temperatura {temp_umbral}ºC?")
         print("- Sí\n" if supera else "- No\n")
         if self._successor is not None:
             self._successor.manejar_posicion()
         return
 
-class manejadorAumentoTemperatura(manejadorcalculos):
+class ManejadorAumentoTemperatura(Manejadorcalculos):
     def establecer_estrategia(self):
         self._estrategia = Contexto()
         self._estrategia.establecer_estrategia(EstrategiaC())
@@ -248,6 +254,7 @@ class Contexto:
         if not isinstance(estrategia, Estrategia):
             raise TypeError("La estrategia elegida debe ser de tipo 'Estrategia'")
         self._estrategia = estrategia
+        return 
 
     def hacer_algo(self, L):
         return self._estrategia.aplicar_estrategia(L)
@@ -255,15 +262,15 @@ class Contexto:
 class Estrategia(ABC):
     @abstractmethod
     def aplicar_estrategia(self,L):
+        pass
+
+class EstrategiaA(Estrategia):
+    def aplicar_estrategia(self, L):
         
         if not isinstance(L, list):
             raise TypeError("El parametro proporcionado debe ser de tipo 'list'.")
         if not all(isinstance(elem, (float, int)) for elem in L):
             raise TypeError("La lista debe contener solo elementos de tipo 'float' o 'int'.")
-        
-
-class EstrategiaA(Estrategia):
-    def aplicar_estrategia(self, L):
         
         calc_media = lambda lista: round(reduce(lambda x,y: (x+y) ,lista)/len(lista),3)
         calc_sd = lambda lista: round((reduce(lambda x,y: x+y, map(lambda x: (x[0] - x[1])**2, zip(lista, [calc_media(lista)]*len(lista))))/len(lista))**(1/2),3)
@@ -272,6 +279,11 @@ class EstrategiaA(Estrategia):
 
 class EstrategiaB(Estrategia):
     def aplicar_estrategia(self, L):
+        
+        if not isinstance(L, list):
+            raise TypeError("El parametro proporcionado debe ser de tipo 'list'.")
+        if not all(isinstance(elem, (float, int)) for elem in L):
+            raise TypeError("La lista debe contener solo elementos de tipo 'float' o 'int'.")
         
         from math import ceil
 
@@ -282,6 +294,11 @@ class EstrategiaB(Estrategia):
 class EstrategiaC(Estrategia):
     def aplicar_estrategia(self, L):
         
+        if not isinstance(L, list):
+            raise TypeError("El parametro proporcionado debe ser de tipo 'list'.")
+        if not all(isinstance(elem, (float, int)) for elem in L):
+            raise TypeError("La lista debe contener solo elementos de tipo 'float' o 'int'.")
+
         calc_max = lambda lista: reduce(lambda x, y: x if x > y else y, lista)
         calc_min = lambda lista: reduce(lambda x, y: x if x < y else y, lista)
 
@@ -289,7 +306,7 @@ class EstrategiaC(Estrategia):
 
 ##### CLIENTE #####
 try:
-    entorno = entornoIoT.obtener_instancia('SistemaIoT')
+    entorno = EntornoIoT.obtener_instancia('SistemaIoT')
     entorno.obtener_instancia('SistemaIoT_2')
     entorno.info_entorno()
     entorno.iniciar_funcionamiento()
