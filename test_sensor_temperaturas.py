@@ -5,19 +5,19 @@ from entregable_2 import *
 
 def test_singleton():
     # Nos aseguramos de que solamente hay una instancia del Singleton
-    instance1 = entornoIoT.obtener_instancia("Mi sistema IOT")
-    instance2 = entornoIoT.obtener_instancia("Otro sistema IOT")
+    instance1 = EntornoIoT.obtener_instancia("Mi sistema IOT")
+    instance2 = EntornoIoT.obtener_instancia("Otro sistema IOT")
     assert instance1 is instance2
 
 def test_nombre_entornoIoT():
-    entornoIoT._unicaInstancia = None
+    EntornoIoT._unicaInstancia = None
     with pytest.raises(TypeError):
-        entornoIoT.obtener_instancia(33)
+        EntornoIoT.obtener_instancia(33)
 
 def test_registrar_subs():
-    entornoIoT._unicaInstancia = None
+    EntornoIoT._unicaInstancia = None
     with pytest.raises(TypeError):
-        entornoIoT.obtener_instancia("Sensor IoT")._registrar_subscriptor(Subscriptor())
+        EntornoIoT.obtener_instancia("Sensor IoT")._registrar_subscriptor(Subscriptor())
 
 def test_nombre_sensor():
     with pytest.raises(TypeError):
@@ -33,10 +33,10 @@ def test_eliminar_subs():
 
 def test_manejadorcalculos():
     with pytest.raises(TypeError):
-        manejadorEstadisticos_EstrategiaA([1,2,3], "manejador")
+        ManejadorEstadisticos_EstrategiaA([1,2,3], "manejador")
         
     with pytest.raises(TypeError):
-        manejadorEstadisticos_EstrategiaA([1,2,"Hola"])
+        ManejadorEstadisticos_EstrategiaA([1,2,"Hola"])
 
 def test_contexto():
     with pytest.raises(TypeError):
